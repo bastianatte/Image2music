@@ -15,16 +15,52 @@ IMG_EXTS = {".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".webp"}
 # =======================
 def adsr_envelope(n_samples: int, sr: int,
                   attack=0.02, decay=0.08, sustain=0.7, release=0.1) -> np.ndarray:
-    a = max(1, int(attack * sr))
-    d = max(1, int(decay * sr))
-    r = max(1, int(release * sr))
-    s = max(0, n_samples - (a + d + r))
-    env = np.zeros(n_samples, dtype=np.float32)
-    env[:a] = np.linspace(0.0, 1.0, a, endpoint=True)
-    env[a:a+d] = np.linspace(1.0, sustain, d, endpoint=True)
-    env[a+d:a+d+s] = sustain
-    env[a+d+s:a+d+s+r] = np.linspace(sustain, 0.0, r, endpoint=True)
+    """
+    ADSR robusta: se a+d+r > n, ridistribuisce proporzionalmente per evitare out-of-bounds.
+    Garantisce sempre len(env) == n_samples.
+    """
+    n = int(max(1, n_samples))
+    # campioni grezzi
+    a = int(max(0, round(attack  * sr)))
+    d = int(max(0, round(decay   * sr)))
+    r = int(max(0, round(release * sr)))
+    # se le code superano n, scala proporzionalmente (mantiene i rapporti)
+    total_adr = a + d + r
+    if total_adr > n:
+        if total_adr == 0:
+            a = d = r = 0
+        else:
+            scale = n / total_adr
+            a = int(max(0, math.floor(a * scale)))
+            d = int(max(0, math.floor(d * scale)))
+            r = int(max(0, math.floor(r * scale)))
+        # se per arrotondamenti mancano campioni, mettili al release
+        while a + d + r < n:
+            r += 1
+
+    # sustain riempie il resto
+    s = max(0, n - (a + d + r))
+
+    env = np.zeros(n, dtype=np.float32)
+    idx = 0
+    if a > 0:
+        env[idx:idx+a] = np.linspace(0.0, 1.0, a, endpoint=True, dtype=np.float32)
+        idx += a
+    if d > 0:
+        env[idx:idx+d] = np.linspace(1.0, float(sustain), d, endpoint=True, dtype=np.float32)
+        idx += d
+    if s > 0:
+        env[idx:idx+s] = float(sustain)
+        idx += s
+    if r > 0:
+        # da sustain -> 0
+        env[idx:idx+r] = np.linspace(float(sustain), 0.0, r, endpoint=True, dtype=np.float32)
+        idx += r
+    # sicurezza finale
+    if idx < n:
+        env[idx:] = 0.0
     return env
+
 
 def sine_wave(freq: np.ndarray, sr: int) -> np.ndarray:
     """Accetta freq costante (float) o array per vibrato in Hz; restituisce float32."""
@@ -256,32 +292,45 @@ def apply_vibrato(sig: np.ndarray, sr: int, base_freq: float, vib_rate: float, v
 
 def multitap_delay_stereo(L: np.ndarray, R: np.ndarray, sr: int,
                           times_ms=(120, 250, 380), fb=0.25, mix=0.2) -> Tuple[np.ndarray, np.ndarray]:
-    """Delay multi-tap semplice (feedback globale)."""
+    """
+    Delay multi-tap che mantiene la stessa lunghezza dell'input (n campioni).
+    Ogni tap aggiunge una copia attenuata del segnale spostata di 'd' campioni.
+    Il feedback è applicato in modo stabile senza accedere fuori range.
+    """
+    assert L.ndim == 1 and R.ndim == 1
     n = L.size
-    outL = L.copy().astype(np.float32)
-    outR = R.copy().astype(np.float32)
-    taps = [max(1, int(ms*sr/1000.0)) for ms in times_ms]
-    maxd = max(taps)
-    # buffer feedback
-    bufL = np.zeros(n + maxd + 1, dtype=np.float32)
-    bufR = np.zeros_like(bufL)
-    bufL[:n] = L
-    bufR[:n] = R
+    if n == 0 or mix <= 0:
+        return L, R
+
+    taps = sorted({max(1, int(ms * sr / 1000.0)) for ms in times_ms if ms and ms > 0})
+    if not taps:
+        return L, R
+
+    outL = L.astype(np.float32).copy()
+    outR = R.astype(np.float32).copy()
+
+    # Somma le copie ritardate rispettando i limiti (nessuna estensione della lunghezza)
     for d in taps:
-        outL[d:d+n] += mix * bufL[:n]
-        outR[d:d+n] += mix * bufR[:n]
-    # semplice feedback unico
+        seg = n - d
+        if seg <= 0:
+            continue
+        outL[d:n] += mix * L[:seg]
+        outR[d:n] += mix * R[:seg]
+
+    # Feedback semplice: riapplica una frazione del segnale già "delayed"
     if fb > 0:
+        fb = float(np.clip(fb, 0.0, 0.95))
         for d in taps:
-            bufL[d:d+n] += fb * bufL[:n]
-            bufR[d:d+n] += fb * bufR[:n]
-    # ritaglia
-    outL = outL[:n]
-    outR = outR[:n]
-    # soft clip
+            seg = n - d
+            if seg <= 0:
+                continue
+            outL[d:n] += fb * outL[:seg]
+            outR[d:n] += fb * outR[:seg]
+
+    # Soft clip per sicurezza
     outL = np.tanh(outL)
     outR = np.tanh(outR)
-    return outL, outR
+    return outL.astype(np.float32), outR.astype(np.float32)
 
 # =======================
 # CONFIG & IO
