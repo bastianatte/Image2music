@@ -1,0 +1,54 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Image2Song: single (1 tono per immagine)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}\\image2sound.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true,
+      "args": [
+        "--mode", "single",
+        "--input", "C:\\Users\\spina\\OneDrive\\Immagini\\Fk_account",
+        "--output", "C:\\Users\\spina\\Documents\\Other_Codes\\Image2music\\Trial",
+        "--unit_dur", "1.2",
+        "--xfade", "0.03"
+      ]
+    },
+    {
+      "name": "Image2Song: per_col (una colonna = un tono)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}\\image2sound.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true,
+      "args": [
+        "--mode", "per_col",
+        "--input", "C:\\Users\\spina\\OneDrive\\Immagini\\Fk_account",
+        "--output", "C:\\Users\\spina\\Documents\\Other_Codes\\Image2music\\Trial",
+        "--unit_dur", "0.5",
+        "--max_segments", "80",
+        "--xfade", "0.02"
+      ]
+    },
+    {
+      "name": "Image2Song: per_row (una riga = un tono)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}\\image2sound.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true,
+      "args": [
+        "--mode", "per_row",
+        "--input", "C:\\Users\\spina\\OneDrive\\Immagini\\Fk_account",
+        "--output", "C:\\Users\\spina\\Documents\\Other_Codes\\Image2music\\Trial",
+        "--unit_dur", "0.5",
+        "--max_segments", "80"
+      ]
+    }
+  ]
+}
