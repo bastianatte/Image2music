@@ -2,53 +2,104 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Image2Song: single (1 tono per immagine)",
+      "name": "Image2Music (electronic): single",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}\\image2sound.py",
+      "program": "C:\\Users\\spina\\Documents\\Other_Codes\\Image2music\\image2sound.py",
       "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}",
-      "justMyCode": true,
+      "cwd": "C:\\Users\\spina\\Documents\\Other_Codes\\Image2music",
       "args": [
         "--mode", "single",
         "--input", "C:\\Users\\spina\\OneDrive\\Immagini\\Fk_account",
         "--output", "C:\\Users\\spina\\Documents\\Other_Codes\\Image2music\\Trial",
+        "--outfile", "image2sound_single_electronic.wav",
         "--unit_dur", "1.2",
-        "--xfade", "0.03"
+        "--xfade", "0.04",
+        "--quantize",
+        "--scale", "pentatonic",
+        "--key_hz", "261.63",
+        "--timbre", "additive",
+        "--max_harm", "10",
+        "--vib_rate", "5.5",
+        "--vib_cents", "10",
+        "--trem_rate", "4",
+        "--trem_depth", "0.2",
+        "--bpm", "96",
+        "--grid", "1/8",
+        "--delay_mix", "0.2",
+        "--delay_fb", "0.25"
       ]
     },
     {
-      "name": "Image2Song: per_col (una colonna = un tono)",
+      "name": "Image2Music (electronic): per_col",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}\\image2sound.py",
+      "program": "C:\\Users\\spina\\Documents\\Other_Codes\\Image2music\\image2sound.py",
       "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}",
-      "justMyCode": true,
+      "cwd": "C:\\Users\\spina\\Documents\\Other_Codes\\Image2music",
       "args": [
         "--mode", "per_col",
         "--input", "C:\\Users\\spina\\OneDrive\\Immagini\\Fk_account",
         "--output", "C:\\Users\\spina\\Documents\\Other_Codes\\Image2music\\Trial",
-        "--unit_dur", "0.5",
+        "--outfile", "image2sound_percol_electronic.wav",
+        "--unit_dur", "0.45",
+        "--xfade", "0.03",
         "--max_segments", "80",
-        "--xfade", "0.02"
+        "--quantize",
+        "--scale", "dorian",
+        "--key_hz", "293.66",
+        "--timbre", "saw",
+        "--max_harm", "12",
+        "--vib_rate", "6",
+        "--vib_cents", "6",
+        "--trem_rate", "7",
+        "--trem_depth", "0.25",
+        "--bpm", "110",
+        "--grid", "1/16",
+        "--delay_mix", "0.22",
+        "--delay_fb", "0.28"
       ]
     },
     {
-      "name": "Image2Song: per_row (una riga = un tono)",
+      "name": "Image2Music (electronic): per_row",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}\\image2sound.py",
+      "program": "C:\\Users\\spina\\Documents\\Other_Codes\\Image2music\\image2sound.py",
       "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}",
-      "justMyCode": true,
+      "cwd": "C:\\Users\\spina\\Documents\\Other_Codes\\Image2music",
       "args": [
         "--mode", "per_row",
         "--input", "C:\\Users\\spina\\OneDrive\\Immagini\\Fk_account",
         "--output", "C:\\Users\\spina\\Documents\\Other_Codes\\Image2music\\Trial",
-        "--unit_dur", "0.5",
-        "--max_segments", "80"
+        "--outfile", "image2sound_perrow_electronic.wav",
+        "--unit_dur", "0.6",
+        "--xfade", "0.03",
+        "--max_segments", "72",
+        "--quantize",
+        "--scale", "minor",
+        "--key_hz", "220",
+        "--timbre", "triangle",
+        "--max_harm", "9",
+        "--vib_rate", "5",
+        "--vib_cents", "7",
+        "--trem_rate", "3.5",
+        "--trem_depth", "0.18",
+        "--bpm", "88",
+        "--grid", "1/8",
+        "--delay_mix", "0.16",
+        "--delay_fb", "0.2"
       ]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Image2Music (electronic): all modes",
+      "configurations": [
+        "Image2Music (electronic): single",
+        "Image2Music (electronic): per_col",
+        "Image2Music (electronic): per_row"
+      ],
+      "stopAll": true
     }
   ]
 }
